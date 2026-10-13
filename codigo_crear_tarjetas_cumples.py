@@ -56,8 +56,6 @@ Este código implementa un proceso de generación de imágenes a partir de plant
 # ======================================================
 # IMPORTS Y SERVICIOS
 # ======================================================
-!apt-get update > /dev/null
-!apt-get install -y poppler-utils > /dev/null
 # ⬇️ Imports para interactuar con las APIs de Google (Drive/Slides)
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
