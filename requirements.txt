@@ -1,0 +1,10 @@
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+pandas
+openpyxl
+pdf2image
+gspread
+gspread-dataframe
+Pillow
+requests
