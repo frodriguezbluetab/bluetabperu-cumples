@@ -2,7 +2,6 @@ name: Automatizacion de Tarjetas
 
 on:
   schedule:
-    # Se ejecuta todos los días a las 07:00 UTC (2:00 AM hora de Lima)
     - cron: '0 7 * * *'
   workflow_dispatch: # Permite ejecutar el bot manualmente desde GitHub
 
@@ -12,7 +11,7 @@ jobs:
 
     steps:
     - name: Clonar el repositorio
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Configurar Python
       uses: actions/setup-python@v4
@@ -33,10 +32,10 @@ jobs:
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      run: python generar_cumples.py
+      run: python codigo_crear_tarjetas_cumples.py
 
     - name: Ejecutar script de Aniversarios
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      run: python generar_aniversarios.py
+      run: python codigo_crear_tarjetas_aniversarios.py
