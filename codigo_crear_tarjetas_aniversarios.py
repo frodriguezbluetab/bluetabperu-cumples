@@ -469,9 +469,9 @@ for idx, fila in df.iterrows():
       print(f"⏭️ Saltando registro {idx + 1} ({nombre_actual}): Personal sin foto o con foto genérica.")
       continue
 
-    if str(fila.get('url tarjeta aniversario')) not in ["" or "nan" or "NAN"]:
-      print(f"⏭️ Saltando registro {idx + 1} ({nombre_actual}): Personal ya tiene tarjeta creada.")
-      continue
+    if str(fila.get('url tarjeta aniversario')).strip() not in ["", "nan", "NAN"]:
+        print(f"⏭️ Saltando registro {idx + 1} ({nombre_actual}): Personal ya tiene tarjeta creada.")
+        continue
 
     anios_antiguedad = calcular_antiguedad(fila['Fecha de contratación'])
     if anios_antiguedad < 1:

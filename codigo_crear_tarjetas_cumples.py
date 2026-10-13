@@ -423,12 +423,12 @@ for idx, fila in df.iterrows():
     # if "SANDOVAL QUINO JHON PAUL" not in nombre_raw:
     #   continue
 
-    url_actual = str(fila["url tarjeta cumple"]).strip().lower()
-
+    url_actual = str(fila["url tarjeta cumple"]).strip()
+    
     # 🔄 LÓGICA INVERTIDA:
     # Si la celda NO es "nan" y NO está vacía, significa que ya tiene tarjeta.
     # Entonces, saltamos al siguiente empleado.
-    if url_actual != "nan" and url_actual != "":
+    if url_actual.lower() not in ["", "nan"]:
         print(f"⏭️ Saltando a {fila[COL_NOMBRE]}: Ya tiene tarjeta generada.")
         continue
 
