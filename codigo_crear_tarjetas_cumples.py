@@ -16,6 +16,7 @@ import json
 from google.oauth2 import service_account
 import gspread
 from googleapiclient.discovery import build
+from datetime import datetime
 
 # Leer credenciales desde GitHub Secrets
 creds_json = json.loads(os.environ['GOOGLE_CREDENTIALS'])
@@ -111,7 +112,7 @@ def obtener_url_publica_drive(file_id):
     except:
         pass
     # 🔗 Retorna la URL de descarga directa/visualización pública.
-    return f"https://drive.google.com/uc?export=download&id={file_id}"
+    return f"https://drive.google.com/uc?export=view&id={file_id}"
 
 # ======================================================
 # PROCESAR IMAGEN (546x546 + esquinas redondeadas)
@@ -396,6 +397,17 @@ CARPETA_DESTINO = '1hYdy12nbo5MMFP0TT94Nv85FHwEqQxpX'
 
 #CARPETA_DESTINO = '1dsaS58m0o81sJ-z_It_vsWkmrLX6r-Vn' # NUEVO ID de la carpeta de Drive destino.
 
+hoy = datetime.now()
+mes_actual = hoy.month
+dia_actual = hoy.day
+
+meses_a_procesar = [mes_actual]
+
+if dia_actual >= 24:
+    mes_siguiente = mes_actual + 1 if mes_actual < 12 else 1
+    meses_a_procesar.append(mes_siguiente)
+
+print(f"📅 Meses habilitados para procesar tarjetas: {meses_a_procesar}")
 
 # 🔄 Itera sobre cada fila (empleado) del DataFrame.
 for idx, fila in df.iterrows():
@@ -403,8 +415,13 @@ for idx, fila in df.iterrows():
     # 🔍 1. VALIDACIÓN DE PARADA: Si el nombre está vacío o es 'nan', detiene todo el proceso.
     nombre_raw = str(fila[COL_NOMBRE]).strip()
 
-    if " octubre" not in formatear_fecha_cumple(str(fila[COL_FECHA_NACIMIENTO]).strip()).lower():
-      continue
+    fecha_cumple_str = str(fila[COL_FECHA_NACIMIENTO]).strip()
+    try:
+        mes_cumple = int(fecha_cumple_str.split('/')[1])
+        if mes_cumple not in meses_a_procesar:
+            continue
+    except (IndexError, ValueError):
+        continue
     # if "SANDOVAL QUINO JHON PAUL" not in nombre_raw:
     #   continue
 
@@ -463,12 +480,16 @@ for idx, fila in df.iterrows():
       print(f"✅ Se subio al drive la imagen de cumple para: {nombre_persona}")
 
 
-    # 3) Subir a GitHub: Sube la imagen al repositorio para obtener una URL pública estable.
-    url_github = subir_a_github(img_path, nombre_archivo)
-
-    # 4) Registrar link en Sheets: Escribe la URL de GitHub en la hoja de cálculo.
-    if url_github:
-        worksheet.update_cell(idx + 2, columna_url, url_github) # idx + 2 es la fila real (+1 por índice base 0, +1 por cabecera).
-        print(f"✅ Se subio al repositorio la imagen de cumple para: {nombre_persona}")
+    # 3) Subir
+    if uploaded:
+        print(f"✅ Se subió al Drive la imagen de cumple para: {nombre_persona}")
+        
+        # Extraemos el ID, le damos permisos públicos y armamos la URL de descarga/vista
+        imagen_final_url = obtener_url_publica_drive(uploaded['id'])
+        
+        # Escribe la URL de Drive en la hoja de cálculo
+        worksheet.update_cell(idx + 2, columna_url, imagen_final_url) 
+        
+        print(f"✅ Se actualizó el Excel con el link de Drive para: {nombre_persona}")
     else:
-        print(f"⚠️ Falló subida para {nombre_persona}")
+        print(f"⚠️ Falló la subida a Drive para {nombre_persona}")

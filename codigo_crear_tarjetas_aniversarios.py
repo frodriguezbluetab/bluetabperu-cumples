@@ -80,7 +80,7 @@ def obtener_url_publica_drive(file_id):
         print(f"ADVERTENCIA: No se pudo hacer pública la imagen. Error: {e}")
         print("Es probable que las políticas de tu Google Workspace no permitan compartir archivos públicamente.")
 
-    return f"https://drive.google.com/uc?export=download&id={file_id}"
+    return f"https://drive.google.com/uc?export=view&id={file_id}"
 
 
 # ======================================================
@@ -421,6 +421,20 @@ print("✅ Datos cargados desde Google Sheets")
 cabecera = worksheet.row_values(1)
 columna_url = None
 
+hoy = datetime.now()
+mes_actual = hoy.month
+dia_actual = hoy.day
+
+# Siempre procesamos el mes actual
+meses_a_procesar = [mes_actual]
+
+# Si estamos en los últimos 7 días del mes (día 24 en adelante), sumamos el mes siguiente
+if dia_actual >= 24:
+    mes_siguiente = mes_actual + 1 if mes_actual < 12 else 1
+    meses_a_procesar.append(mes_siguiente)
+
+print(f"📅 Meses habilitados para procesar tarjetas: {meses_a_procesar}")
+
 for idx, col in enumerate(cabecera):
     if col.strip().lower() == 'url tarjeta aniversario':
         columna_url = idx + 1
@@ -436,10 +450,12 @@ for idx, fila in df.iterrows():
     nombre_actual = str(fila['NOMBRE']).strip()
     partes_fecha = str(fila['Fecha de contratación']).strip().split('/')
 
-    mes_texto = partes_fecha[1]
-
-    if mes_texto not in ['10']:
-      continue
+    try:
+        mes_aniversario = int(partes_fecha[1])
+        if mes_aniversario not in meses_a_procesar:
+            continue
+    except (IndexError, ValueError):
+        continue
 
     estado_cese = str(fila.get('CESE', '')).strip().lower()
     if "cese" in estado_cese:
@@ -480,15 +496,17 @@ for idx, fila in df.iterrows():
             carpeta_id=CARPETA_DESTINO_DRIVE
         )
 
-        # 3) Subir / actualizar en GitHub
-        url_github = subir_a_github(img_path, f"{nombre_archivo}.png")
-
-        # 4) Actualizar Google Sheets
-        if url_github:
-            worksheet.update_cell(idx + 2, columna_url, url_github)
-            print(f"Se subio al repositorio la imagen de {nombre_persona}")
+        # 3) Subir
+        if archivo_id_drive:
+            # Como archivo_id_drive ya es el texto del ID, lo pasamos directo:
+            imagen_final_url = obtener_url_publica_drive(archivo_id_drive)
+            
+            # Actualizamos la celda en el Excel
+            worksheet.update_cell(idx + 2, columna_url, imagen_final_url) 
+            
+            print(f"✅ Se subió a Drive y se actualizó el Excel para: {nombre_persona}")
         else:
-            print(f"Falló subida al repositorio para la imagen de {nombre_persona}")
+            print(f"⚠️ Falló la subida a Drive para la imagen de {nombre_persona}")
 
     except Exception as e:
         print(f"❌ Ocurrió un error procesando a {nombre_actual}: {e}")
