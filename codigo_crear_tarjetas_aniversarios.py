@@ -54,6 +54,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from pdf2image import convert_from_path
 from PIL import Image, ImageDraw
+from gspread_dataframe import get_as_dataframe
 import base64
 import requests
 import io
