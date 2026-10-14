@@ -77,10 +77,16 @@ def obtener_url_publica_drive(file_id):
             fileId=file_id,
             body={'type': 'anyone', 'role': 'reader'}
         ).execute()
-    except Exception as e:
-        print(f"ADVERTENCIA: No se pudo hacer pública la imagen. Error: {e}")
-        print("Es probable que las políticas de tu Google Workspace no permitan compartir archivos públicamente.")
 
+        drive_service.permissions().create(
+                fileId=file_id,
+                transferOwnership=True,
+                body={'type': 'user', 'role': 'owner', 'emailAddress': 'franco.rodriguez@bluetab.net'}
+            ).execute()
+    
+    except Exception as e:
+        print(f"ADVERTENCIA: Problema con permisos en Drive. Error: {e}")
+    
     return f"https://drive.google.com/uc?export=view&id={file_id}"
 
 
